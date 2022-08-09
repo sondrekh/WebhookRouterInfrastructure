@@ -6,20 +6,20 @@ name: Deploy Bicep files
 variables:
   vmImageName: 'ubuntu-latest'
 
-  azureServiceConnection: 'lab'
-  resourceGroupName: 'webhookTs'
+  azureServiceConnection: lab
+  resourceGroupName: 'rg-webhook'
   location: 'northeurope'
-  rgFile: './resourceGroup.bicep'
-  functionFile: './functionContent.bicep'
-
+  templateFile: 'main.bicep'
 pool:
   vmImage: $(vmImageName)
 
 steps:
-- task: BatchScript@1
+- task: AzureCLI@2
   inputs:
-    filename: 'deploy_rg.bat'
-
-- task: BatchScript@1
-  inputs:
-    filename: 'deploy_functionContent.bat'
+    azureSubscription: $(azureServiceConnection)
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+      az --version
+      az group create --name $(resourceGroupName) --location $(location)
+      az deployment group create --resource-group $(resourceGroupName) --template-file $(templateFile)
