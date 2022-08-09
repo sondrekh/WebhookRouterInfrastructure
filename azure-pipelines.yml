@@ -9,20 +9,17 @@ variables:
   azureServiceConnection: 'lab'
   resourceGroupName: 'webhookTs'
   location: 'northeurope'
-  templateFile: './main.bicep'
+  rgFile: './resourceGroup.bicep'
+  functionFile: './functionContent.bicep'
+
 pool:
   vmImage: $(vmImageName)
 
 steps:
-- task: AzureResourceManagerTemplateDeployment@3
+- task: BatchScript@1
   inputs:
-    deploymentScope: 'Resource Group'
-    azureResourceManagerConnection: '$(azureServiceConnection)'
-    action: 'Create Or Update Resource Group'
-    resourceGroupName: '$(resourceGroupName)'
-    location: '$(location)'
-    templateLocation: 'Linked artifact'
-    csmFile: '$(templateFile)'
-    overrideParameters: '-storageAccountType Standard_LRS'
-    deploymentMode: 'Incremental'
-    deploymentName: 'DeployPipelineTemplate'
+    filename: 'deploy_rg.bat'
+
+- task: BatchScript@1
+  inputs:
+    filename: 'deploy_functionContent.bat'
