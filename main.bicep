@@ -1,6 +1,14 @@
 @description('The name of the function app that you wish to create.')
 param appName string = 'skh-webhook'
 param topicName string = 'router'
+
+@description('Storage Account type')
+@allowed([
+  'Standard_LRS'
+  'Standard_GRS'
+  'Standard_RAGRS'
+])
+
 param storageAccountType string = 'Standard_LRS'
 
 @description('Location for all resources.')
@@ -11,7 +19,6 @@ var hostingPlanName = appName
 var applicationInsightsName = appName
 var storageAccountName = '${uniqueString(resourceGroup().id)}azfunctions'
 
-// Storage required for running function apps
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
   location: location
@@ -20,6 +27,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   }
   kind: 'Storage'
 }
+
 
 // Service plan (consumption)
 resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
@@ -35,6 +43,7 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   }
 }
 
+
 // Service bus namespace
 resource service_bus 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' = {
   name: 'sb-webhook-skh'
@@ -44,7 +53,6 @@ resource service_bus 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' = {
   }
 }
 
-// Single topic for receiving all messages from function app
 resource topic 'Microsoft.ServiceBus/namespaces/topics@2022-01-01-preview' = {
   name: topicName
   parent: service_bus
@@ -69,11 +77,6 @@ resource accountSubscription 'Microsoft.ServiceBus/namespaces/topics/subscriptio
   parent: topic
   properties: {
     defaultMessageTimeToLive: 'PT12H'
-    maxDeliveryCount: 1
-  }
-}
-
-
 
 // All messages for debugging purposes
 resource all 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2022-01-01-preview' = {
