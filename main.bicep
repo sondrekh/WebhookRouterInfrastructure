@@ -15,7 +15,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
 
 // Service plan (consumption)
 resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
-  name: appName
+  name: 'plan-${appName}'
   location: location
   kind: 'linux'
   sku: {
@@ -29,7 +29,7 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
 
 // Service bus namespace
 resource service_bus 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' = {
-  name: 'sb-webhook-skh'
+  name: 'sb-${appName}'
   location: location
   sku: {
     name: 'Standard'
@@ -164,7 +164,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
 }
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: appName
+  name: 'appinsight-${appName}'
   location: location
   kind: 'web'
   properties: {
