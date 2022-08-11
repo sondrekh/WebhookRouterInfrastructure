@@ -1,22 +1,8 @@
-@description('The name of the function app that you wish to create.')
 param appName string = 'skh-webhook'
 param topicName string = 'router'
-
-@description('Storage Account type')
-@allowed([
-  'Standard_LRS'
-  'Standard_GRS'
-  'Standard_RAGRS'
-])
-
 param storageAccountType string = 'Standard_LRS'
-
-@description('Location for all resources.')
 param location string = resourceGroup().location
 
-var functionAppName = appName
-var hostingPlanName = appName
-var applicationInsightsName = appName
 var storageAccountName = '${uniqueString(resourceGroup().id)}azfunctions'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
@@ -28,10 +14,9 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   kind: 'Storage'
 }
 
-
 // Service plan (consumption)
 resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
-  name: hostingPlanName
+  name: appName
   location: location
   kind: 'linux'
   sku: {
@@ -43,13 +28,12 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   }
 }
 
-
 // Service bus namespace
 resource service_bus 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' = {
   name: 'sb-webhook-skh'
   location: location
   sku: {
-    name: 'Standard'  
+    name: 'Standard'
   }
 }
 
@@ -77,6 +61,8 @@ resource accountSubscription 'Microsoft.ServiceBus/namespaces/topics/subscriptio
   parent: topic
   properties: {
     defaultMessageTimeToLive: 'PT12H'
+  }
+}
 
 // All messages for debugging purposes
 resource all 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2022-01-01-preview' = {
@@ -124,7 +110,7 @@ var serviceBusConnectionString = listKeys(serviceBusEndpoint, service_bus.apiVer
 
 // Function app with reference to dependencies
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
-  name: functionAppName
+  name: appName
   location: location
   kind: 'functionapp'
   identity: {
@@ -144,7 +130,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
-          value: toLower(functionAppName)
+          value: toLower(appName)
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
@@ -176,7 +162,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
 }
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: applicationInsightsName
+  name: appName
   location: location
   kind: 'web'
   properties: {
@@ -184,4 +170,3 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
     Request_Source: 'rest'
   }
 }
-
