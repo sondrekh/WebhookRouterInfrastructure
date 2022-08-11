@@ -1,15 +1,14 @@
-param appName string = 'skh-webhook'
-param topicName string = 'router'
-param storageAccountType string = 'Standard_LRS'
+param appName string = 'skh-function-messageRouter'
+param topicName string = 'messageRouter'
 param location string = resourceGroup().location
 
-var storageAccountName = '${uniqueString(resourceGroup().id)}azfunctions'
-
+// Storage account required for function
+var storageAccountName = 'storage${uniqueString(resourceGroup().id)}'
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
   location: location
   sku: {
-    name: storageAccountType
+    name: 'Standard_LRS'
   }
   kind: 'Storage'
 }
@@ -37,6 +36,8 @@ resource service_bus 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' = {
   }
 }
 
+// Service Bus Topic where all messages can be sent to, where 
+// filters can be applied to only subscribe to certain messages. 
 resource topic 'Microsoft.ServiceBus/namespaces/topics@2022-01-01-preview' = {
   name: topicName
   parent: service_bus
