@@ -61,6 +61,7 @@ resource accountSubscription 'Microsoft.ServiceBus/namespaces/topics/subscriptio
   parent: topic
   properties: {
     defaultMessageTimeToLive: 'PT12H'
+    maxDeliveryCount: 1
   }
 }
 
